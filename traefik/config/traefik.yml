@@ -1,0 +1,69 @@
+global:
+  checkNewVersion: false
+  sendAnonymousUsage: false
+
+log:
+  level: INFO
+  format: common
+  filePath: /var/log/traefik/traefik.log
+
+accessLog:
+  filePath: /var/log/traefik/access.log
+  format: common
+  bufferingSize: 100
+
+api:
+  insecure: true
+  dashboard: true
+
+entryPoints:
+  web:
+    address: ":80"
+    forwardedHeaders:
+      insecure: true
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+          permanent: true
+
+  websecure:
+    address: ":443"
+    forwardedHeaders:
+      insecure: true
+    http:
+      tls:
+        certResolver: cloudflare
+        domains:
+          - main: example.com
+            sans:
+              - "*.example.com"
+
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+    network: traefik
+  file:
+    directory: /etc/traefik/dynamic
+    watch: true
+
+certificatesResolvers:
+  cloudflare:
+    acme:
+      email: allen2fuc@gmail.com
+      storage: /etc/traefik/letsencrypt/acme.json
+      dnsChallenge:
+        provider: cloudflare
+        resolvers:
+          - "1.1.1.1:53"
+          - "8.8.8.8:53"
+        # 防止 DNS 传播太快导致校验失败
+        delayBeforeCheck: 30
+
+serversTransport:
+  forwardingTimeouts:
+    dialTimeout: 60s
+    responseHeaderTimeout: 0
+    idleConnTimeout: 0

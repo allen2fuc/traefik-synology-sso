@@ -1,0 +1,40 @@
+services:
+  traefik:
+    image: traefik:v3.7
+    ports:
+      - "80:80"
+      - "8080:8080"   # Traefik Dashboard
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./traefik/config/traefik.yml:/etc/traefik/traefik.yml
+      - ./traefik/dynamic:/etc/traefik/dynamic:ro
+      - ./traefik/logs:/var/log/traefik
+      - ./traefik/letsencrypt:/etc/traefik/letsencrypt
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    networks:
+      - proxy
+
+  # SSO 认证服务（本项目）
+  synology-sso:
+    image: uhub.service.ucloud.cn/allen2fuc/traefik-synology-sso:latest
+    environment:
+      - SYNOLOGY_BASE_URL=https://nas.example.com
+      - SYNOLOGY_CLIENT_ID=your_application_id
+      - SYNOLOGY_CLIENT_SECRET=your_application_secret
+      - APP_BASE_URL=https://sso.example.com
+      - SECRET_KEY=53791833e2c9727dd4d2455411c21ad10d47db30354b0603130f285e207d7573
+    expose:
+      - "8000"
+    networks:
+      - proxy
+
+  # 受保护的上游服务示例
+  whoami:
+    image: traefik/whoami
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true

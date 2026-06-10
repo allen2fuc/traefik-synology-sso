@@ -1,0 +1,28 @@
+http:
+  middlewares:
+    synology-sso:
+      forwardAuth:
+        # SSO 应用的 verify 端点（容器内部地址）
+        address: "http://synology-sso:8000/auth/verify"
+        # 登录成功后，将用户信息 header 转发给上游服务
+        authResponseHeaders:
+          - "X-User-Sub"
+          - "X-User-Name"
+          - "X-User-Email"
+        # 信任 Traefik 自身注入的 X-Forwarded-* 头
+        trustForwardHeader: true
+
+  routers:
+    synology-sso:
+      rule: Host(`sso.example.com`)
+      entryPoints:
+        - websecure
+      service: synology-sso-svc
+      tls:
+        certresolver: cloudflare
+        
+  services:
+    synology-sso-svc:
+      loadBalancer:
+        servers:
+          - url: http://synology-sso:8000

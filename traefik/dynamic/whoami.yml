@@ -1,0 +1,16 @@
+http:
+  routers:
+    whoami:
+      rule: Host(`whoami.example.com`)
+      entryPoints:
+        - websecure
+      service: whoami-svc
+      tls:
+        certresolver: cloudflare
+      middlewares:
+        - synology-sso@file
+  services:
+    whoami-svc:
+      loadBalancer:
+        servers:
+          - url: http://whoami:80

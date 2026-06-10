@@ -1,0 +1,20 @@
+http:
+  routers:
+    nas:
+      rule: "Host(`nas.example.com`)"
+      entryPoints:
+        - websecure
+      service: nas-svc
+      tls: 
+        certResolver: cloudflare
+
+  services:
+    nas-svc:
+      loadBalancer:
+        servers:
+          - url: "https://192.168.50.100:5001"
+        serversTransport: insecure-nas
+
+  serversTransports:
+    insecure-nas:
+      insecureSkipVerify: true
