@@ -122,7 +122,12 @@ services:
   # SSO 认证服务（本项目）
   synology-sso:
     image: uhub.service.ucloud.cn/allen2fuc/traefik-synology-sso:latest
-    env_file: .env
+    environment:
+      - SYNOLOGY_BASE_URL=https://nas.example.com
+      - SYNOLOGY_CLIENT_ID=your_application_id
+      - SYNOLOGY_CLIENT_SECRET=your_application_secret
+      - APP_BASE_URL=https://sso.example.com
+      - SECRET_KEY=53791833e2c9727dd4d2455411c21ad10d47db30354b0603130f285e207d7573
     expose:
       - "8000"
     networks:
